@@ -1,0 +1,403 @@
+openapi: 3.0.3
+info:
+  title: Recipe Management API
+  description: API for managing recipes, user authentication, and other related functionalities
+  version: 1.0.0
+  contact:
+    name: Chen Frydman
+    email: chenfrydman@gmail.com
+
+tags:
+  - name: User
+    description: Endpoints related to user management
+  - name: Recipe
+    description: Endpoints related to recipe management
+  - name: Website
+    description: Endpoints related to different pages
+
+paths:
+  /:
+    get:
+      tags:
+        - Website
+      summary: Retrieve the main page
+      responses:
+        '200':
+          description: Main page content
+
+  /Register:
+    post:
+      tags:
+        - User
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+      responses:
+        '201':
+          description: User successfully created
+        '400':
+          description: Invalid input
+        '409':
+          description: Username already taken
+
+
+  /Login:
+    post:
+      tags:
+        - User
+      summary: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: Login succeeded
+        '401':
+          description: Invalid username or password
+
+  /Logout:
+    post:
+      tags:
+        - User
+      summary: Log out a user
+      responses:
+        '200':
+          description: Logout succeeded
+
+  /favorites:
+    post:
+      tags:
+        - User
+      summary: Add a recipe to favorites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipeId:
+                  type: integer
+                  example: 12345
+      responses:
+        '200':
+          description: Recipe successfully added to favorites
+        '400':
+          description: Bad request
+    get:
+      tags:
+        - User
+      summary: Get user's favorite recipes
+      responses:
+        '200':
+          description: A list of favorite recipes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+    delete:
+      tags:
+        - User
+        - Recipe
+      summary: Remove a recipe from the user's favorite list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipeId:
+                  type: integer
+                  description: ID of the recipe to be removed
+              required:
+                - recipeId
+      responses:
+        '200':
+          description: The Recipe successfully removed from favorites
+        '401':
+          description: Unauthorized
+  /favoritesrecipe:
+    get:
+      tags:
+        - User
+        - Recipe
+      summary: Retrieve all favorite recipes of the currently logged-in user
+      description: |
+        This endpoint retrieves all favorite recipes of the authenticated user. The user must be logged in to access this information.
+      responses:
+        '200':
+          description: Successfully retrieved favorite recipes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+        '401':
+          description: Unauthorized - user is not authenticated
+        '404':
+          description: No favorite recipes found
+
+  /addmyRecipe:
+    post:
+      tags:
+        - User
+        - Recipe
+      summary: Add a custom recipe for the logged-in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                image:
+                  type: string
+                title:
+                  type: string
+                readyInMinutes:
+                  type: integer
+                aggregateLikes:
+                  type: integer
+                servings:
+                  type: integer
+                vegetarian:
+                  type: boolean
+                vegan:
+                  type: boolean
+                glutenFree:
+                  type: boolean
+                summary:
+                  type: string
+                instructions:
+                  type: string
+                extendedIngredients:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - title
+                - readyInMinutes
+      responses:
+        '201':
+          description: Recipe successfully added
+        '400':
+          description: Missing required fields
+        '401':
+          description: Unauthorized
+
+    get:
+      tags:
+        - User
+        - Recipe
+      summary: Retrieve a list of custom recipes for the logged-in user
+      responses:
+        '200':
+          description: A list of user's custom recipes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+        '401':
+          description: Unauthorized
+
+  /favoritesID:
+    get:
+      tags:
+        - User
+      summary: Get a list of favorite recipe IDs for the logged-in user
+      responses:
+        '200':
+          description: A list of favorite recipe IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+        '401':
+          description: Unauthorized
+
+  /search:
+    get:
+      tags:
+        - Recipe
+      summary: Search for recipes by name, cuisine, diet, and other filters
+      parameters:
+        - name: recipeName
+          in: query
+          description: Name of the recipe to search for
+          required: false
+          schema:
+            type: string
+        - name: cuisine
+          in: query
+          description: Cuisine type (e.g., Italian, Mexican)
+          required: false
+          schema:
+            type: string
+        - name: diet
+          in: query
+          description: Type of diet (e.g., vegetarian, vegan)
+          required: false
+          schema:
+            type: string
+        - name: intolerance
+          in: query
+          description: Intolerances (e.g., gluten, dairy)
+          required: false
+          schema:
+            type: string
+        - name: number
+          in: query
+          description: Number of recipes to return
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+
+  /random:
+    get:
+      tags:
+        - Recipe
+      summary: Retrieve random recipes
+      parameters:
+        - name: number
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 3
+      responses:
+        '200':
+          description: Random recipes details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+
+  /{recipeId}:
+    get:
+      tags:
+        - Recipe
+      summary: Get a recipe by its ID
+      parameters:
+        - name: recipeId
+          in: path
+          description: ID of the recipe
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Recipe details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: Recipe not found
+  /familyRecipes:
+    get:
+      tags:
+        - Recipe
+      summary: Retrieve family recipes
+      responses:
+        '200':
+          description: A list of family recipes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeList'
+
+components:
+  schemas:
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          example: johndoe
+        firstname:
+          type: string
+          example: John
+        lastname:
+          type: string
+          example: Doe
+        country:
+          type: string
+          example: USA
+        password:
+          type: string
+          format: password
+          description: Password between 5 to 10 characters
+          example: pass123
+        email:
+          type: string
+          format: email
+          description: User email
+          example: johndoe@example.com
+      required:
+        - username
+        - firstname
+        - lastname
+        - country
+        - password
+        - email
+
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+          example: johndoe
+        password:
+          type: string
+          format: password
+          example: pass123
+      required:
+        - username
+        - password
+
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+        instructions:
+          type: string
+        favorite:
+          type: boolean
+
+    RecipeList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Recipe'
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/ofirtamir1997/recipes/1.0.0
