@@ -6,11 +6,7 @@ Ofir Tamir 208897991
 This Website was created for a project in the course 'Internet Programming Environments'.
 This Website was created for a project in the course 'Internet Programming Environments'.
 
-![alt text](txt_and_img_files/image.png)
 
-![alt text](txt_and_img_files/image-3.png)
-
-![alt text](txt_and_img_files/image-4.png)
 
 ## Installation
 In order to install the website, you are going to need:
